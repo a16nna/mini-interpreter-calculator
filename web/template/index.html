@@ -1,0 +1,223 @@
+web/templates/index.html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mini Interpreter Calculator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body tabindex="0">
+
+<div class="calculator">
+    <div class="history-panel" id="historyPanel">
+        <h2>History</h2>
+    <div id="historyList"></div>
+    </div>
+
+    <div class="top-bar">
+        <button onclick="toggleHistory()">📜</button>
+        <button onclick="toggleTheme()">🌙</button>
+        <button onclick="clearMemory()">MC</button>
+        <button onclick="recallMemory()">MR</button>
+        <button onclick="addMemory()">M+</button>
+    </div>
+
+    <div class="display">
+        <input type="text" id="expressionText">
+        <input type="text" id="display" value="0">
+    </div>
+
+
+    <div class="buttons">
+
+        <button class="function" onclick="clearDisplay()">C</button>
+        <button onclick="append('(')">(</button>
+        <button onclick="append(')')">)</button>
+        <button class="operator" onclick="append('/')">÷</button>
+
+        <button onclick="append('7')">7</button>
+        <button onclick="append('8')">8</button>
+        <button onclick="append('9')">9</button>
+        <button class="operator" onclick="append('*')">×</button>
+
+        <button onclick="append('4')">4</button>
+        <button onclick="append('5')">5</button>
+        <button onclick="append('6')">6</button>
+        <button class="operator" onclick="append('-')">−</button>
+
+        <button onclick="append('1')">1</button>
+        <button onclick="append('2')">2</button>
+        <button onclick="append('3')">3</button>
+        <button class="operator" onclick="append('+')">+</button>
+
+        <button onclick="append('sin(')">sin</button>
+        <button onclick="append('cos(')">cos</button>
+        <button onclick="append('log(')">log</button>
+        <button onclick="append('sqrt(')">√</button>
+
+        <button class="zero" onclick="append('0')">0</button>
+        <button onclick="append('.')">.</button>
+        <button class="equals" onclick="calculate()">=</button>
+
+    </div>
+
+</div>
+
+<script>
+
+let expression = "";
+let memoryValue = 0;
+
+// =====================
+// MEMORY FUNCTIONS
+// =====================
+
+function addMemory() {
+    const currentValue = parseFloat(document.getElementById("display").value);
+
+    if (!isNaN(currentValue)) {
+        memoryValue += currentValue;
+    }
+
+    console.log("Memory =", memoryValue);
+}
+
+function recallMemory() {
+    // Replace expression instead of appending
+    expression = memoryValue.toString();
+    updateExpressionDisplay();
+    updateResultDisplay(memoryValue);
+}
+
+function clearMemory() {
+    memoryValue = 0;
+    console.log("Memory cleared");
+}
+// =====================
+// HISTORY
+// =====================
+
+function toggleHistory() {
+    document.getElementById("historyPanel").classList.toggle("show");
+}
+
+function addToHistory(expr, result) {
+    console.log("Adding to history:", expr, result);
+
+    const history = document.getElementById("historyList");
+
+    const entry = document.createElement("div");
+    entry.className = "history-entry";
+    entry.innerText = expr + " = " + result;
+
+    // Click history to reuse result
+    entry.onclick = function() {
+        expression = result.toString();
+        updateExpressionDisplay();
+        updateResultDisplay(result);
+    };
+
+    history.prepend(entry);
+}
+
+// =====================
+// DISPLAY HELPERS
+// =====================
+
+function updateExpressionDisplay() {
+    document.getElementById("expressionText").value = expression;
+}
+
+function updateResultDisplay(value) {
+    document.getElementById("display").value = value;
+}
+
+// =====================
+// INPUT
+// =====================
+
+function append(value) {
+    expression += value;
+    updateExpressionDisplay();
+}
+
+function clearDisplay() {
+    expression = "";
+    updateExpressionDisplay();
+    updateResultDisplay("0");
+}
+
+// =====================
+// CALCULATE
+// =====================
+
+async function calculate() {
+    if (!expression) return;
+
+    const currentExpression = expression;  // Save before clearing
+
+    try {
+        const response = await fetch("/evaluate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ expression })
+        });
+
+        const data = await response.json();
+
+        if (!data.result || data.result === "Error") {
+            updateResultDisplay("Error");
+            return;
+        }
+
+        updateResultDisplay(data.result);
+
+        // ADD TO HISTORY (THIS WAS MISSING)
+        addToHistory(currentExpression, data.result);
+
+        expression = "";
+        updateExpressionDisplay();
+
+    } catch {
+        updateResultDisplay("Error");
+    }
+}
+
+// =====================
+// THEME
+// =====================
+
+function toggleTheme() {
+    document.body.classList.toggle("light-mode");
+}
+
+// =====================
+// KEYBOARD
+// =====================
+
+document.addEventListener("keydown", function(event) {
+
+    const key = event.key;
+
+    if (!isNaN(key) || ['+', '-', '*', '/', '.', '^', '%', '(', ')'].includes(key)) {
+        append(key);
+    }
+
+    if (key === "Enter") {
+        calculate();
+    }
+
+    if (key === "Backspace") {
+        expression = expression.slice(0, -1);
+        updateExpressionDisplay();
+    }
+
+    if (key === "Escape") {
+        clearDisplay();
+    }
+});
+
+</script>
+
+</body>
+</html>
