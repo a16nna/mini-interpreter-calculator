@@ -1,4 +1,4 @@
-web/app.py
+web/server.py
 import threading
 import webview
 from server import app  # import your Flask app
