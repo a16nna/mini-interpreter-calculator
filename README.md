@@ -160,6 +160,8 @@ pi
 ### History Panel
 ![History](assets/history.png)
 
+### Light Mode
+![lightmode](assets/light_mode.png)
 ### Scientific Functions
 ![Scientific](assets/scientific.png)
 ---
