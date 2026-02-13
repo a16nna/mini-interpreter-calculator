@@ -152,8 +152,6 @@ pi
 - Designed custom UI with memory & history features  
 
 ---
-## License
-MIT License
-## 📄 License
 
+## License
 MIT License
