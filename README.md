@@ -152,7 +152,17 @@ pi
 - Designed custom UI with memory & history features  
 
 ---
+## 📸 Screenshots
 
+### Dark Mode
+![Dark Mode](assets/dark_mode.png)
+
+### History Panel
+![History](assets/history.png)
+
+### Scientific Functions
+![Scientific](assets/scientific.png)
+---
 ## License
 MIT License
 
